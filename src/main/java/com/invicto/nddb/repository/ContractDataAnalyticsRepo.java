@@ -1,11 +1,10 @@
 package com.invicto.nddb.repository;
 
-import com.invicto.nddb.entity.Contract;
+import com.invicto.nddb.entity.ContractDataAnalytics;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
-import java.util.Optional;
 
-public interface ContractRepo  extends CrudRepository<Contract,Long> {
-    Optional<Contract> findContractByInstrumentAndExpiryDateAndSymbol(String instrument, LocalDate localDate, String symbol);
+@Repository
+public interface ContractDataAnalyticsRepo extends CrudRepository<ContractDataAnalytics,Long> {
 }

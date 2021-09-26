@@ -9,6 +9,7 @@ import org.apache.commons.csv.CSVRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.transaction.Transactional;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -31,6 +32,7 @@ public class BhavCopyReader {
         this.runBookRepo = runBookRepo;
     }
 
+    @Transactional
     public void loadBhavCopy(File file, BhavCopyRecordProcessor processor) {
         long recordCounter = 0;
         RunBook runBook = new RunBook();

@@ -28,11 +28,11 @@ public class BhavCopyRecordProcessor {
         this.contractDataAnalyticsRepo = contractDataAnalytics;
     }
 
-    public void process(EquityDerivativeCsvRecord record, RunBook runBook){
-        Optional<Contract> optionalContract = contractRepo.findContractByInstrumentAndExpiryDateAndSymbol(record.getInstrument(),record.getExpiryDt(),record.getSymbol());
+    public void process(EquityDerivativeCsvRecord record, RunBook runBook) {
+        Optional<Contract> optionalContract = contractRepo.findContractByInstrumentAndExpiryDateAndSymbol(record.getInstrument(), record.getExpiryDt(), record.getSymbol());
         Contract contract = null;
-        if(optionalContract.isPresent()){
-            Optional<ContractData> latestDataOptional  = contractDataRepo.findTop1ByContractOrderByCollectionDateDesc(optionalContract.get());
+        if (optionalContract.isPresent()) {
+            Optional<ContractData> latestDataOptional = contractDataRepo.findTop1ByContractOrderByCollectionDateDesc(optionalContract.get());
             contract = optionalContract.get();
             ContractData contractData = new ContractData();
             contractData.setClose(record.getClose());
@@ -46,23 +46,23 @@ public class BhavCopyRecordProcessor {
             contractData.setRunBook(runBook);
             contractDataRepo.save(contractData);
 
-            if(latestDataOptional.isPresent()){
+            if (latestDataOptional.isPresent()) {
                 ContractDataAnalytics contractDataAnalytics = new ContractDataAnalytics();
-                contractDataAnalytics.setDeltaCloseP(getDeltaPercentage(contractData.getClose(),latestDataOptional.get().getClose()));
-                contractDataAnalytics.setDeltaVolumeP(getDeltaPercentage(contractData.getVolume(),latestDataOptional.get().getVolume()));
-                contractDataAnalytics.setDeltaOiP(getDeltaPercentage(contractData.getOpenInterest(),latestDataOptional.get().getOpenInterest()));
-                if(contractDataAnalytics.getDeltaVolumeP() > 0.0 && contractDataAnalytics.getDeltaOiP() > 0.0 && contractDataAnalytics.getDeltaCloseP() > 0.0)
+                contractDataAnalytics.setDeltaCloseP(getDeltaPercentage(contractData.getClose(), latestDataOptional.get().getClose()));
+                contractDataAnalytics.setDeltaVolumeP(getDeltaPercentage(contractData.getVolume(), latestDataOptional.get().getVolume()));
+                contractDataAnalytics.setDeltaOiP(getDeltaPercentage(contractData.getOpenInterest(), latestDataOptional.get().getOpenInterest()));
+                if (contractDataAnalytics.getDeltaVolumeP() > 0.0 && contractDataAnalytics.getDeltaOiP() > 0.0 && contractDataAnalytics.getDeltaCloseP() > 0.0)
                     contractDataAnalytics.setSignal("LONG_BUILD_UP");
-                if(contractDataAnalytics.getDeltaVolumeP() > 0.0 && contractDataAnalytics.getDeltaOiP() > 0.0 && contractDataAnalytics.getDeltaCloseP() < 0.0)
+                if (contractDataAnalytics.getDeltaVolumeP() > 0.0 && contractDataAnalytics.getDeltaOiP() > 0.0 && contractDataAnalytics.getDeltaCloseP() < 0.0)
                     contractDataAnalytics.setSignal("SHORT_BUILD_UP");
+
+
                 contractDataAnalytics.setAnalyticsDate(contractData.getCollectionDate());
                 contractDataAnalytics.setContract(contract);
                 contractDataAnalyticsRepo.save(contractDataAnalytics);
 
             }
-        }
-        else
-        {
+        } else {
             contract = new Contract();
             contract.setInstrument(record.getInstrument());
             contract.setExpiryDate(record.getExpiryDt());
@@ -84,7 +84,7 @@ public class BhavCopyRecordProcessor {
 
     }
 
-    private double getDeltaPercentage(double num,double deno){
-        return 100 * ((num -deno)/deno);
+    private double getDeltaPercentage(double num, double deno) {
+        return 100 * ((num - deno) / deno);
     }
 }

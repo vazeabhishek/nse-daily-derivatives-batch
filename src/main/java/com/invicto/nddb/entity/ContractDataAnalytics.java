@@ -23,10 +23,27 @@ public class ContractDataAnalytics {
             }
     )
     private Long id;
+    @Column(name = "DELTA_VOL_P")
     private double deltaVolumeP;
+    @Column(name = "DELTA_OI_P")
     private double deltaOiP;
+    @Column(name = "DELTA_CLOSE_P")
     private double deltaCloseP;
+    @Column(name = "BUYERS_WON_COUNT")
+    private double buyersWonCount = 0;
+    @Column(name = "SELLERS_WON_COUNT")
+    private double sellersWonCount = 0;
+    @Column(name = "HIGHER_HIGH_COUNT")
+    private double higherHighCount = 0;
+    @Column(name = "HIGHER_LOW_COUNT")
+    private double higherLowCount = 0;
+    @Column(name = "LOWER_LOW_COUNT")
+    private double lowerLowCount = 0;
+    @Column(name = "LOWER_HIGH_COUNT")
+    private double lowerHighCount = 0;
+    @Column(name = "SIGNAR")
     private String signal;
+    @Column(name = "ANALYTICS_DATE")
     private LocalDate analyticsDate;
     @ManyToOne(targetEntity = Contract.class, fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     private Contract contract;

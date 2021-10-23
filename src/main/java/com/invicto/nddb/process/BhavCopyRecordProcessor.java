@@ -8,12 +8,14 @@ import com.invicto.nddb.model.EquityDerivativeCsvRecord;
 import com.invicto.nddb.repository.ContractDataAnalyticsRepo;
 import com.invicto.nddb.repository.ContractDataRepo;
 import com.invicto.nddb.repository.ContractRepo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
 @Component
+@Slf4j
 public class BhavCopyRecordProcessor {
 
 
@@ -32,6 +34,8 @@ public class BhavCopyRecordProcessor {
         Optional<Contract> optionalContract = contractRepo.findContractByInstrumentAndExpiryDateAndSymbol(record.getInstrument(), record.getExpiryDt(), record.getSymbol());
         Contract contract = null;
         if (optionalContract.isPresent()) {
+            log.info("Processing data for existing contract {}{}",contract.getSymbol(),contract.getExpiryDate());
+            Optional<ContractData> latestDataOptional = contractDataRepo.findTop1ByContractOrderByCollectionDateDesc(optionalContract.get());
             contract = optionalContract.get();
             ContractData contractData = new ContractData();
             contractData.setClose(record.getClose());
@@ -44,10 +48,9 @@ public class BhavCopyRecordProcessor {
             contractData.setContract(contract);
             contractData.setRunBook(runBook);
             contractDataRepo.save(contractData);
-
-            Optional<ContractData> latestDataOptional = contractDataRepo.findTop1ByContractOrderByCollectionDateDesc(optionalContract.get());
             if (latestDataOptional.isPresent()) {
                 ContractData latestContractData = latestDataOptional.get();
+                log.info("latest contract data is dated {}",latestContractData.getCollectionDate());
                 ContractDataAnalytics contractDataAnalytics = new ContractDataAnalytics();
                 contractDataAnalytics.setDeltaCloseP(getDeltaPercentage(contractData.getClose(), latestContractData.getClose()));
                 contractDataAnalytics.setDeltaVolumeP(getDeltaPercentage(contractData.getVolume(), latestContractData.getVolume()));

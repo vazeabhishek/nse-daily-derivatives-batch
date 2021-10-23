@@ -32,7 +32,6 @@ public class BhavCopyRecordProcessor {
         Optional<Contract> optionalContract = contractRepo.findContractByInstrumentAndExpiryDateAndSymbol(record.getInstrument(), record.getExpiryDt(), record.getSymbol());
         Contract contract = null;
         if (optionalContract.isPresent()) {
-            Optional<ContractData> latestDataOptional = contractDataRepo.findTop1ByContractOrderByCollectionDateDesc(optionalContract.get());
             contract = optionalContract.get();
             ContractData contractData = new ContractData();
             contractData.setClose(record.getClose());
@@ -46,21 +45,36 @@ public class BhavCopyRecordProcessor {
             contractData.setRunBook(runBook);
             contractDataRepo.save(contractData);
 
+            Optional<ContractData> latestDataOptional = contractDataRepo.findTop1ByContractOrderByCollectionDateDesc(optionalContract.get());
             if (latestDataOptional.isPresent()) {
+                ContractData latestContractData = latestDataOptional.get();
                 ContractDataAnalytics contractDataAnalytics = new ContractDataAnalytics();
-                contractDataAnalytics.setDeltaCloseP(getDeltaPercentage(contractData.getClose(), latestDataOptional.get().getClose()));
-                contractDataAnalytics.setDeltaVolumeP(getDeltaPercentage(contractData.getVolume(), latestDataOptional.get().getVolume()));
-                contractDataAnalytics.setDeltaOiP(getDeltaPercentage(contractData.getOpenInterest(), latestDataOptional.get().getOpenInterest()));
+                contractDataAnalytics.setDeltaCloseP(getDeltaPercentage(contractData.getClose(), latestContractData.getClose()));
+                contractDataAnalytics.setDeltaVolumeP(getDeltaPercentage(contractData.getVolume(), latestContractData.getVolume()));
+                contractDataAnalytics.setDeltaOiP(getDeltaPercentage(contractData.getOpenInterest(), latestContractData.getOpenInterest()));
                 if (contractDataAnalytics.getDeltaVolumeP() > 0.0 && contractDataAnalytics.getDeltaOiP() > 0.0 && contractDataAnalytics.getDeltaCloseP() > 0.0)
                     contractDataAnalytics.setSignal("LONG_BUILD_UP");
                 if (contractDataAnalytics.getDeltaVolumeP() > 0.0 && contractDataAnalytics.getDeltaOiP() > 0.0 && contractDataAnalytics.getDeltaCloseP() < 0.0)
                     contractDataAnalytics.setSignal("SHORT_BUILD_UP");
-
-
+                Optional<ContractDataAnalytics> optionalContractDataAnalytics = contractDataAnalyticsRepo.findTop1ByContractOrderByAnalyticsDateDesc(contract);
+                if (optionalContractDataAnalytics.isPresent()) {
+                    ContractDataAnalytics latestAnalytics = optionalContractDataAnalytics.get();
+                    if (contractData.getHigh() > latestContractData.getHigh())
+                        contractDataAnalytics.setHigherHighCount(latestAnalytics.getHigherHighCount() + 1);
+                    if (contractData.getLow() < latestContractData.getLow())
+                        contractDataAnalytics.setLowerLowCount(latestAnalytics.getLowerLowCount() + 1);
+                    if (contractData.getHigh() < latestContractData.getHigh())
+                        contractDataAnalytics.setLowerHighCount(latestAnalytics.getLowerHighCount() + 1);
+                    if (contractData.getLow() > latestContractData.getLow())
+                        contractDataAnalytics.setHigherLowCount(latestAnalytics.getHigherLowCount() + 1);
+                    if (contractData.getClose() > latestContractData.getClose() && contractData.getHigh() > latestContractData.getHigh() && contractData.getVolume() > latestContractData.getVolume())
+                        contractDataAnalytics.setBuyersWonCount(latestAnalytics.getBuyersWonCount() + 1);
+                    if (contractData.getClose() < latestContractData.getClose() && contractData.getLow() > latestContractData.getLow() && contractData.getVolume() > latestContractData.getVolume())
+                        contractDataAnalytics.setSellersWonCount(latestAnalytics.getSellersWonCount() + 1);
+                }
                 contractDataAnalytics.setAnalyticsDate(contractData.getCollectionDate());
                 contractDataAnalytics.setContract(contract);
                 contractDataAnalyticsRepo.save(contractDataAnalytics);
-
             }
         } else {
             contract = new Contract();
@@ -80,8 +94,6 @@ public class BhavCopyRecordProcessor {
             contractData.setContract(contract);
             contractDataRepo.save(contractData);
         }
-
-
     }
 
     private double getDeltaPercentage(double num, double deno) {

@@ -55,9 +55,9 @@ public class BhavCopyRecordProcessor {
                 contractDataAnalytics.setDeltaCloseP(getDeltaPercentage(contractData.getClose(), latestContractData.getClose()));
                 contractDataAnalytics.setDeltaVolumeP(getDeltaPercentage(contractData.getVolume(), latestContractData.getVolume()));
                 contractDataAnalytics.setDeltaOiP(getDeltaPercentage(contractData.getOpenInterest(), latestContractData.getOpenInterest()));
-                if (contractDataAnalytics.getDeltaVolumeP() > 0.0 && contractDataAnalytics.getDeltaOiP() > 0.0 && contractDataAnalytics.getDeltaCloseP() > 0.0)
+                if (contractDataAnalytics.getDeltaVolumeP() > 0.0 && contractDataAnalytics.getDeltaOiP() > 0.0 && contractDataAnalytics.getDeltaCloseP() > 0.0 && contractData.getOpen() < latestContractData.getClose() && contractData.getHigh() > latestContractData.getHigh())
                     contractDataAnalytics.setSignal("LONG_BUILD_UP");
-                if (contractDataAnalytics.getDeltaVolumeP() > 0.0 && contractDataAnalytics.getDeltaOiP() > 0.0 && contractDataAnalytics.getDeltaCloseP() < 0.0)
+                if (contractDataAnalytics.getDeltaVolumeP() > 0.0 && contractDataAnalytics.getDeltaOiP() > 0.0 && contractDataAnalytics.getDeltaCloseP() < 0.0 && contractData.getOpen() > latestContractData.getClose() && contractData.getLow() < latestContractData.getLow())
                     contractDataAnalytics.setSignal("SHORT_BUILD_UP");
                 Optional<ContractDataAnalytics> optionalContractDataAnalytics = contractDataAnalyticsRepo.findTop1ByContractOrderByAnalyticsDateDesc(contract);
                 if (optionalContractDataAnalytics.isPresent()) {
@@ -70,11 +70,11 @@ public class BhavCopyRecordProcessor {
                         contractDataAnalytics.setLowerHighCount(latestAnalytics.getLowerHighCount() + 1);
                     if (contractData.getLow() > latestContractData.getLow())
                         contractDataAnalytics.setHigherLowCount(latestAnalytics.getHigherLowCount() + 1);
-                    if (contractData.getClose() > latestContractData.getClose() && contractData.getHigh() > latestContractData.getHigh() && contractData.getVolume() > latestContractData.getVolume())
+                    if (contractData.getClose() > latestContractData.getClose() && contractData.getHigh() > latestContractData.getHigh() && contractData.getVolume() > latestContractData.getVolume() && contractData.getLow() > latestContractData.getLow())
                         contractDataAnalytics.setBuyersWonCount(latestAnalytics.getBuyersWonCount() + 1);
                     else
                         contractDataAnalytics.setBuyersWonCount(latestAnalytics.getBuyersWonCount());
-                    if (contractData.getClose() < latestContractData.getClose() && contractData.getLow() < latestContractData.getLow() && contractData.getVolume() > latestContractData.getVolume())
+                    if (contractData.getClose() < latestContractData.getClose() && contractData.getLow() < latestContractData.getLow() && contractData.getVolume() > latestContractData.getVolume() && contractData.getHigh() < latestContractData.getHigh())
                         contractDataAnalytics.setSellersWonCount(latestAnalytics.getSellersWonCount() + 1);
                     else
                         contractDataAnalytics.setSellersWonCount(latestAnalytics.getSellersWonCount());

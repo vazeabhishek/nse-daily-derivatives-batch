@@ -130,11 +130,11 @@ public class BhavCopyRecordProcessor {
         double wickSize = 0.0;
         double candleSize = 0.0;
         if(close > open){
-                wickSize = low - open;
+                wickSize = open - low;
                 candleSize = close - open;
         }
         if(open > close){
-            wickSize = low - close;
+            wickSize = close - low;
             candleSize = open - close;
         }
         if(wickSize > 0.0 && candleSize > 0.0)

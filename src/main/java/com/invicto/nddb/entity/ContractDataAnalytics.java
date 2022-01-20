@@ -41,6 +41,10 @@ public class ContractDataAnalytics {
     private double lowerLowCount = 0;
     @Column(name = "LOWER_HIGH_COUNT")
     private double lowerHighCount = 0;
+    @Column(name = "BUY_WICK_PERCENTAGE")
+    private double buyWickP = 0;
+    @Column(name = "SELL_WICK_PERCENTAGE")
+    private double sellWickP = 0;
     @Column(name = "SIGNAR")
     private String signal;
     @Column(name = "ANALYTICS_DATE")

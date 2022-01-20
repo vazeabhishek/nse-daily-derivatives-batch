@@ -55,9 +55,11 @@ public class BhavCopyRecordProcessor {
                 contractDataAnalytics.setDeltaCloseP(getDeltaPercentage(contractData.getClose(), latestContractData.getClose()));
                 contractDataAnalytics.setDeltaVolumeP(getDeltaPercentage(contractData.getVolume(), latestContractData.getVolume()));
                 contractDataAnalytics.setDeltaOiP(getDeltaPercentage(contractData.getOpenInterest(), latestContractData.getOpenInterest()));
-                if (contractDataAnalytics.getDeltaVolumeP() > 0.0 && contractDataAnalytics.getDeltaOiP() > 0.0 && contractDataAnalytics.getDeltaCloseP() > 0.0 && contractData.getHigh() > latestContractData.getHigh())
+                contractDataAnalytics.setBuyWickP(calculateBuyWickPercentage(latestContractData.getHigh(), latestContractData.getLow(), latestContractData.getOpen(), latestContractData.getClose()));
+                contractDataAnalytics.setSellWickP(calculateSellWickPercentage(latestContractData.getHigh(), latestContractData.getLow(), latestContractData.getOpen(), latestContractData.getClose()));
+                if (contractDataAnalytics.getDeltaVolumeP() > 0.0 && contractDataAnalytics.getDeltaOiP() > 0.0 && contractDataAnalytics.getDeltaCloseP() > 0.0 && contractData.getHigh() > latestContractData.getHigh() && contractDataAnalytics.getSellWickP() < 50)
                     contractDataAnalytics.setSignal("LONG_BUILD_UP");
-                if (contractDataAnalytics.getDeltaVolumeP() > 1.0 && contractDataAnalytics.getDeltaOiP() > 0.0 && contractDataAnalytics.getDeltaCloseP() < 0.0 && contractData.getLow() < latestContractData.getLow())
+                if (contractDataAnalytics.getDeltaVolumeP() > 1.0 && contractDataAnalytics.getDeltaOiP() > 0.0 && contractDataAnalytics.getDeltaCloseP() < 0.0 && contractData.getLow() < latestContractData.getLow() && contractDataAnalytics.getBuyWickP() < 50)
                     contractDataAnalytics.setSignal("SHORT_BUILD_UP");
                 Optional<ContractDataAnalytics> optionalContractDataAnalytics = contractDataAnalyticsRepo.findTop1ByContractOrderByAnalyticsDateDesc(contract);
                 if (optionalContractDataAnalytics.isPresent()) {
@@ -105,5 +107,40 @@ public class BhavCopyRecordProcessor {
 
     private double getDeltaPercentage(double num, double deno) {
         return 100 * ((num - deno) / deno);
+    }
+
+    private double calculateSellWickPercentage(double high, double low, double open, double close){
+        double wickSize = 0.0;
+        double candleSize = 0.0;
+        if(close > open){
+                wickSize = high - close;
+                candleSize = close - open;
+        }
+        if(open > close){
+            wickSize = high - open;
+            candleSize = open - close;
+        }
+        if(wickSize > 0.0 && candleSize > 0.0)
+        return (wickSize/candleSize)*100;
+        else
+        return 0.0;
+
+    }
+    private double calculateBuyWickPercentage(double high, double low, double open, double close){
+        double wickSize = 0.0;
+        double candleSize = 0.0;
+        if(close > open){
+                wickSize = low - open;
+                candleSize = close - open;
+        }
+        if(open > close){
+            wickSize = low - close;
+            candleSize = open - close;
+        }
+        if(wickSize > 0.0 && candleSize > 0.0)
+        return (wickSize/candleSize)*100;
+        else
+        return 0.0;
+
     }
 }

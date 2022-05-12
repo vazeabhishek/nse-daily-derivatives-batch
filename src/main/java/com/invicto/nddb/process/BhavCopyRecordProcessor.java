@@ -57,9 +57,9 @@ public class BhavCopyRecordProcessor {
                 contractDataAnalytics.setDeltaOiP(getDeltaPercentage(contractData.getOpenInterest(), latestContractData.getOpenInterest()));
                 contractDataAnalytics.setBuyWickP(calculateBuyWickPercentage(contractData.getHigh(), contractData.getLow(), contractData.getOpen(), contractData.getClose()));
                 contractDataAnalytics.setSellWickP(calculateSellWickPercentage(contractData.getHigh(), contractData.getLow(), contractData.getOpen(), contractData.getClose()));
-                if (contractDataAnalytics.getDeltaVolumeP() > 0.0 && contractDataAnalytics.getDeltaOiP() > 0.0 && contractDataAnalytics.getDeltaCloseP() > 0.0 && contractData.getHigh() > latestContractData.getHigh() && contractDataAnalytics.getSellWickP() < 30)
+                if (contractDataAnalytics.getDeltaVolumeP() > 10.0 && contractDataAnalytics.getDeltaOiP() > 0.0 && contractDataAnalytics.getDeltaCloseP() > 0.0 && contractData.getHigh() > latestContractData.getHigh() && contractDataAnalytics.getSellWickP() < 30)
                     contractDataAnalytics.setSignal("LONG_BUILD_UP");
-                if (contractDataAnalytics.getDeltaVolumeP() < 0.0 && contractDataAnalytics.getDeltaOiP() < 0.0 && contractDataAnalytics.getDeltaCloseP() < 0.0 && contractData.getLow() < latestContractData.getLow() && contractDataAnalytics.getBuyWickP() < 30)
+                if (contractDataAnalytics.getDeltaVolumeP() > 10.0 && contractDataAnalytics.getDeltaOiP() < 0.0 && contractDataAnalytics.getDeltaCloseP() < 0.0 && contractData.getLow() < latestContractData.getLow() && contractDataAnalytics.getBuyWickP() < 30)
                     contractDataAnalytics.setSignal("SHORT_BUILD_UP");
                 Optional<ContractDataAnalytics> optionalContractDataAnalytics = contractDataAnalyticsRepo.findTop1ByContractOrderByAnalyticsDateDesc(contract);
                 if (optionalContractDataAnalytics.isPresent()) {
